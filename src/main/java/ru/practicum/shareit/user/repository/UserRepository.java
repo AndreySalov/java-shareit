@@ -16,7 +16,5 @@ public interface UserRepository {
 
     boolean deleteUserById(Long userId);
 
-    Optional<User> isUserExist(User user);
-
-    Boolean isEmailExist(String email);
+        Boolean isEmailExist(String email);
 }

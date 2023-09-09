@@ -47,7 +47,7 @@ public class UserService {
             userDto.setEmail(user.getEmail());
         if (userDto.getName() == null)
             userDto.setName(user.getName());
-        //проверим, что Email изменился и проверм на уинкальность.
+        //проверим, что Email изменился и проверм на уникальность.
         if (!user.getEmail().equals(userDto.getEmail()))
             if (userRepository.isEmailExist(userDto.getEmail()))
                 throw new UserEmailValidationException();

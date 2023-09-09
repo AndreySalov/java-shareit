@@ -25,8 +25,7 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User createUser(User user) {
-        if (!user.getEmail().isEmpty())
-            uniqEmails.add(user.getEmail());
+        uniqEmails.add(user.getEmail());
         userId++;
         user.setId(userId);
         users.put(user.getId(), user);
@@ -47,8 +46,7 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public boolean deleteUserById(Long id) {
         if (users.containsKey(id)) {
-            if (!users.get(id).getEmail().isEmpty())
-                uniqEmails.remove(users.get(id).getEmail());
+            uniqEmails.remove(users.get(id).getEmail());
             users.remove(id);
             return true;
         }
@@ -56,18 +54,10 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> isUserExist(User user) {
-        if (users.containsValue(user)) {
-            return Optional.of(user);
-        }
-        return Optional.empty();
-    }
-
-    @Override
     public Boolean isEmailExist(String email) {
         if (email.isEmpty())
             return false;
-        return !uniqEmails.stream().filter(u -> u.equals(email)).findFirst().isEmpty();
+        return uniqEmails.contains(email);
     }
 
 

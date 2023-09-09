@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.service.UserService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,11 +26,7 @@ public class ItemService {
 
     public List<ItemDto> getAllItemsByUser(Long userId) {
         userService.getUserById(userId);
-        List<ItemDto> itemDto = new ArrayList<>();
-        List<Item> items = itemRepository.getAllItemsByUser(userId);
-        for (Item item : items)
-            itemDto.add(ItemMapper.toItemDto(item));
-        return itemDto;
+        return itemRepository.getAllItemsByUser(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     public ItemDto getItemById(Long itemId) {
@@ -57,11 +54,7 @@ public class ItemService {
         if (text.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
-        List<ItemDto> itemDto = new ArrayList<>();
-        List<Item> items = itemRepository.findItems(text);
-        for (Item item : items)
-            itemDto.add(ItemMapper.toItemDto(item));
-        return itemDto;
+        return itemRepository.findItems(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     private void checkItemOwnership(User user, Item item) {
