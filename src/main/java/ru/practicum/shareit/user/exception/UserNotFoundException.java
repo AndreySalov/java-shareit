@@ -1,6 +1,6 @@
 package ru.practicum.shareit.user.exception;
 
-import ru.practicum.shareit.util.NotFoundException;
+import ru.practicum.shareit.exception.NotFoundException;
 
 public class UserNotFoundException extends NotFoundException {
 

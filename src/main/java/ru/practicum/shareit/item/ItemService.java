@@ -8,9 +8,11 @@ import ru.practicum.shareit.item.exception.ItemOwnershipException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.service.UserService;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,38 +21,47 @@ import java.util.List;
 public class ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public List<ItemDto> getAllItemsByUser(Long userId) {
-        userRepository.getUserById(userId).orElseThrow(() ->
-                new UserNotFoundException(userId));
-        return itemRepository.getAllItemsByUser(userId);
+        userService.getUserById(userId);
+        List<ItemDto> itemDto = new ArrayList<>();
+        List<Item> items = itemRepository.getAllItemsByUser(userId);
+        for (Item item : items)
+            itemDto.add(ItemMapper.toItemDto(item));
+        return itemDto;
     }
 
     public ItemDto getItemById(Long itemId) {
-        return itemRepository.getItemDtoById(itemId).orElseThrow(() ->
-                new ItemNotFoundException(itemId));
+        return ItemMapper.toItemDto(itemRepository.getItemById(itemId).orElseThrow(() ->
+                new ItemNotFoundException(itemId)));
     }
 
     public ItemDto createItem(ItemDto itemDto, Long userId) {
-        return itemRepository.createItem(itemDto, userRepository.getUserById(userId).orElseThrow(() ->
-                new UserNotFoundException(userId)));
+        UserDto userDto = userService.getUserById(userId);
+        User user = UserMapper.toUser(userDto);
+        Item item = ItemMapper.toItem(itemDto, user);
+        return ItemMapper.toItemDto(itemRepository.createItem(item, user));
     }
 
     public ItemDto updateItem(Long itemId, ItemDto itemDto, Long userId) {
-        User user = userRepository.getUserById(userId).orElseThrow(() ->
-                new UserNotFoundException(userId));
+        User user = UserMapper.toUser(userService.getUserById(userId));
         Item item = itemRepository.getItemById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(itemId));
         checkItemOwnership(user, item);
-        return itemRepository.updateItem(itemId, itemDto, user);
+        item = ItemMapper.toItem(itemDto, user);
+        return ItemMapper.toItemDto(itemRepository.updateItem(itemId, item, user));
     }
 
     public List<ItemDto> findItems(String text, Long userId) {
         if (text.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
-        return itemRepository.findItems(text, userId);
+        List<ItemDto> itemDto = new ArrayList<>();
+        List<Item> items = itemRepository.findItems(text);
+        for (Item item : items)
+            itemDto.add(ItemMapper.toItemDto(item));
+        return itemDto;
     }
 
     private void checkItemOwnership(User user, Item item) {

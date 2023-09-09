@@ -1,27 +1,20 @@
 package ru.practicum.shareit.item.repository;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryItemRepository implements ItemRepository {
 
-    Map<Long, List<Item>> items = new HashMap<>();
-
+    private final Map<Long, List<Item>> items = new HashMap<>();
     private long itemId = 0;
 
     @Override
-    public List<ItemDto> getAllItemsByUser(Long userId) {
-        return items.get(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+    public List<Item> getAllItemsByUser(Long userId) {
+        return new ArrayList<>(items.get(userId));
     }
 
     @Override
@@ -33,57 +26,45 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Optional<ItemDto> getItemDtoById(Long itemId) {
-        return items.values().stream()
-                .flatMap(Collection::stream)
-                .filter(item -> item.getId().equals(itemId))
-                .map(ItemMapper::toItemDto)
-                .findFirst();
-    }
-
-    @Override
-    public ItemDto createItem(ItemDto itemDto, User user) {
-        Item item = ItemMapper.toItem(itemDto, user);
+    public Item createItem(Item item, User user) {
         itemId++;
         item.setId(itemId);
+        List<Item> userItems = items.get(user.getId());
+        if (userItems == null) {
+            userItems = new ArrayList<>();
+        }
+        userItems.add(item);
+        items.put(user.getId(), userItems);
+        return item;
+    }
 
-        items.compute(item.getOwner().getId(), (userId, userItems) -> {
-            if (userItems == null) {
-                userItems = new ArrayList<>();
+    @Override
+    public Item updateItem(Long itemId, Item updItem, User user) {
+        Item oldItem = getItemById(itemId).get();
+        if (updItem.getName() != null)
+            oldItem.setName(updItem.getName());
+        if (updItem.getDescription() != null)
+            oldItem.setDescription(updItem.getDescription());
+        if (updItem.getAvailable() != null)
+            oldItem.setAvailable(updItem.getAvailable());
+        return oldItem;
+    }
+
+    @Override
+    public List<Item> findItems(String text) {
+        text = text.toLowerCase();
+        List<Item> itemsFind = new ArrayList<>();
+        for (List<Item> itemList : items.values()) {
+            for (Item item : itemList) {
+                if ((item.getName().toLowerCase().contains(text) || item.getDescription().toLowerCase().contains(text))
+                        && item.getAvailable()) {
+                    itemsFind.add(item);
+                }
             }
-            userItems.add(item);
-            return userItems;
-        });
-
-        return ItemMapper.toItemDto(item);
+        }
+        return itemsFind;
     }
 
-    @Override
-    public ItemDto updateItem(Long itemId, ItemDto itemDto, User user) {
-        Item item = getItemById(itemId).orElseThrow(() ->
-                new ItemNotFoundException(itemId));
-        if (itemDto.getName() != null) {
-            item.setName(itemDto.getName());
-        }
-        if (itemDto.getDescription() != null) {
-            item.setDescription(itemDto.getDescription());
-        }
-        if (itemDto.getAvailable() != null) {
-            item.setAvailable(itemDto.getAvailable());
-        }
 
-        return ItemMapper.toItemDto(item);
-    }
-
-    @Override
-    public List<ItemDto> findItems(String text, Long userId) {
-        return items.values().stream()
-                .flatMap(Collection::stream)
-                .filter(item -> item.getAvailable().equals(true))
-                .filter(item -> (item.getName().toLowerCase().contains(text.toLowerCase()) ||
-                        item.getDescription().toLowerCase().contains(text.toLowerCase())))
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
-    }
 }
 

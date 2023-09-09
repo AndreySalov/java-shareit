@@ -2,97 +2,73 @@ package ru.practicum.shareit.user.repository;
 
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.exception.UserEmailValidationException;
-import ru.practicum.shareit.user.mapper.UserMapper;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
 
-    Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
+    private final Set<String> uniqEmails = new HashSet<>();
 
     private long userId = 0;
 
     @Override
-    public List<UserDto> getAllUsers() {
-        return users.values().stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public Optional<User> getUserById(Long userId) {
-        return users.values().stream()
-                .filter(user -> user.getId().equals(userId))
-                .findFirst();
+    public Optional<User> getUserById(Long id) {
+        return Optional.of(users.get(id));
     }
 
     @Override
-    public Optional<UserDto> getUserDtoById(Long userId) {
-        return users.values().stream()
-                .filter(user -> user.getId().equals(userId))
-                .map(UserMapper::toUserDto)
-                .findFirst();
-
-    }
-
-    @Override
-    public UserDto createUser(UserDto userDto) {
-        if (validateEmail(userDto.getEmail()) > 0) {
-            throw new UserEmailValidationException();
-        }
-
-        User user = UserMapper.toUser(userDto);
+    public User createUser(User user) {
+        if (!user.getEmail().isEmpty())
+            uniqEmails.add(user.getEmail());
         userId++;
         user.setId(userId);
         users.put(user.getId(), user);
-        return UserMapper.toUserDto(user);
+        return user;
     }
 
     @Override
-    public UserDto updateUser(Long userId, UserDto userDto) {
-        if (validateIdAndEmail(userId, userDto.getEmail()) != 1) {
-            if (validateEmail(userDto.getEmail()) > 0) {
-                throw new UserEmailValidationException();
-            }
+    public User updateUser(Long id, User user) {
+        User oldUser = users.get(id);
+        if (!oldUser.getEmail().equals(user.getEmail())) {
+            uniqEmails.remove(oldUser.getEmail());
+            uniqEmails.add(user.getEmail());
         }
-
-        User user = users.get(userId);
-
-        if (userDto.getEmail() != null) {
-            user.setEmail(userDto.getEmail());
-        }
-        if (userDto.getName() != null) {
-            user.setName(userDto.getName());
-        }
-        return UserMapper.toUserDto(user);
+        users.put(id, user);
+        return user;
     }
 
     @Override
-    public boolean deleteUserById(Long userId) {
-        if (users.containsKey(userId)) {
-            users.remove(userId);
+    public boolean deleteUserById(Long id) {
+        if (users.containsKey(id)) {
+            if (!users.get(id).getEmail().isEmpty())
+                uniqEmails.remove(users.get(id).getEmail());
+            users.remove(id);
             return true;
         }
         return false;
     }
 
-    private long validateEmail(String email) {
-        return users.values().stream()
-                .filter(u -> u.getEmail().equals(email))
-                .count();
+    @Override
+    public Optional<User> isUserExist(User user) {
+        if (users.containsValue(user)) {
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
 
-    private long validateIdAndEmail(Long userId, String email) {
-        return users.values().stream()
-                .filter(u -> u.getEmail().equals(email))
-                .filter(u -> u.getId().equals(userId))
-                .count();
+    @Override
+    public Boolean isEmailExist(String email) {
+        if (email.isEmpty())
+            return false;
+        return !uniqEmails.stream().filter(u -> u.equals(email)).findFirst().isEmpty();
     }
+
+
 }

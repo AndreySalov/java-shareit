@@ -6,7 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.util.AdviceController;
+import ru.practicum.shareit.exception.AdviceController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,6 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/users")
+
 public class UserController extends AdviceController {
 
     private final UserService userService;
