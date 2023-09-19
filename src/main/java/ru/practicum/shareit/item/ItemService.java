@@ -1,66 +1,184 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.exception.ItemNotFoundException;
-import ru.practicum.shareit.item.exception.ItemOwnershipException;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.dto.BookingDtoForItem;
+import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.comment.Comment;
+
+import ru.practicum.shareit.comment.dto.CommentDtoIn;
+import ru.practicum.shareit.comment.dto.CommentDtoOut;
+import ru.practicum.shareit.comment.mapper.CommentMapper;
+import ru.practicum.shareit.comment.repository.CommentRepository;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.exception.BadParameterException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 @RequiredArgsConstructor
 public class ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
-    public List<ItemDto> getAllItemsByUser(Long userId) {
-        userService.getUserById(userId);
-        return itemRepository.getAllItemsByUser(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+    public void deleteItem(long id) {
+        checkId(id);
+        itemRepository.deleteById(id);
     }
 
-    public ItemDto getItemById(Long itemId) {
-        return ItemMapper.toItemDto(itemRepository.getItemById(itemId).orElseThrow(() ->
-                new ItemNotFoundException(itemId)));
+    @Transactional
+    public ItemDto createItem(long userId, ItemDto itemDto) {
+        User user = checkUser(userId);
+        Item itemFromDto = ItemMapper.toItem(itemDto, user);
+        Item item = itemRepository.save(itemFromDto);
+        return ItemMapper.toItemDto(item);
     }
 
-    public ItemDto createItem(ItemDto itemDto, Long userId) {
-        UserDto userDto = userService.getUserById(userId);
-        User user = UserMapper.toUser(userDto);
-        Item item = ItemMapper.toItem(itemDto, user);
-        return ItemMapper.toItemDto(itemRepository.createItem(item, user));
-    }
-
-    public ItemDto updateItem(Long itemId, ItemDto itemDto, Long userId) {
-        User user = UserMapper.toUser(userService.getUserById(userId));
-        Item item = itemRepository.getItemById(itemId).orElseThrow(() ->
-                new ItemNotFoundException(itemId));
-        checkItemOwnership(user, item);
-        item = ItemMapper.toItem(itemDto, user);
-        return ItemMapper.toItemDto(itemRepository.updateItem(itemId, item, user));
-    }
-
-    public List<ItemDto> findItems(String text, Long userId) {
-        if (text.isEmpty()) {
-            return Collections.EMPTY_LIST;
+    @Transactional
+    public ItemDto updateItem(long userId, ItemDto itemDto, long itemId) {
+        checkId(itemId);
+        checkUser(userId);
+        Item itemFromRep = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
+        if (itemFromRep.getUser().getId() != userId) {
+            throw new NotFoundException("Пользователь с ID " + userId + " не является владельцем вещи c ID "
+                    + itemId + ". Изменение запрещено");
         }
-        return itemRepository.findItems(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        Item item = ItemMapper.toItem(itemDto, itemFromRep);
+        item.setId(itemId);
+
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    private void checkItemOwnership(User user, Item item) {
-        if (!item.getOwner().equals(user)) {
-            throw new ItemOwnershipException("Пользователь с id = " + user.getId() +
-                    " не является владельцем вещи c id = " + item.getId());
+    public List<ItemDto> search(String text) {
+        if (text.isBlank()) {
+            return List.of();
+        }
+        List<Item> itemsList = itemRepository.search(text);
+        return itemsList.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(toList());
+    }
+
+    public ItemDtoDated getItemById(long userId, long itemId) {
+        checkId(itemId);
+        checkUser(userId);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
+        List<CommentDtoOut> comments = commentRepository.findCommentsByItemId(itemId).stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(toList());
+        if (item.getUser().getId() != userId) {
+            return ItemMapper.toItemDto(item, null, null, comments);
+        }
+        List<Booking> lastBookings = bookingRepository.findLastBookingByItemId(itemId, LocalDateTime.now(),
+                Sort.by(DESC, "start"));
+        BookingDtoForItem lastBooking = BookingMapper.toItemBookingDto(lastBookings.isEmpty()
+                ? null : lastBookings.get(0));
+        List<Booking> nextBookings = bookingRepository.findNextBookingByItemId(itemId, LocalDateTime.now(),
+                Sort.by(ASC, "start"));
+        BookingDtoForItem nextBooking = BookingMapper.toItemBookingDto(nextBookings.isEmpty()
+                ? null : nextBookings.get(0));
+
+        return ItemMapper.toItemDto(item, lastBooking, nextBooking, comments);
+    }
+
+    public List<ItemDtoDated> getUserItems(long userId) {
+        checkUser(userId);
+
+        List<Item> items = itemRepository.findAllItemsByUserIdOrderById(userId);
+        if (items.isEmpty()) {
+            throw new NotFoundException("Пользователь " + userId + " не является хозяином ни одной вещи");
+        }
+
+        List<Long> itemIds = new ArrayList<>();
+        for (Item item : items) {
+            itemIds.add(item.getId());
+        }
+        List<ItemDtoDated> datedItemList = new ArrayList<>();
+        Map<Item, List<Booking>> lastBookingsMap = bookingRepository.findLastBookingsByUserIdByItemIn(userId,
+                        LocalDateTime.now(), itemIds, Sort.by(DESC, "start"))
+                .stream()
+                .collect(groupingBy(Booking::getItem, toList()));
+        Map<Item, List<Booking>> nextBookingsMap = bookingRepository.findNextBookingsByUserIdByItemIn(userId,
+                        LocalDateTime.now(), itemIds, Sort.by(ASC, "start"))
+                .stream()
+                .collect(groupingBy(Booking::getItem, toList()));
+        Map<Item, List<Comment>> comments = commentRepository.findByItemIn(itemIds,
+                        Sort.by(DESC, "created"))
+                .stream()
+                .collect(groupingBy(Comment::getItem, toList()));
+
+        for (Item item : items) {
+            Booking lastBooking = null;
+            Booking nextBooking = null;
+            List<CommentDtoOut> commentsList = new ArrayList<>();
+
+            if (lastBookingsMap != null && lastBookingsMap.get(item) != null && lastBookingsMap.get(item).get(0) != null) {
+                lastBooking = lastBookingsMap.get(item).get(0);
+            }
+            if (nextBookingsMap != null && nextBookingsMap.get(item) != null && nextBookingsMap.get(item).get(0) != null) {
+                nextBooking = nextBookingsMap.get(item).get(0);
+            }
+            if (comments != null && comments.get(item) != null) {
+                for (Comment comment : comments.get(item)) {
+                    commentsList.add(CommentMapper.toCommentDto(comment));
+                }
+            }
+            datedItemList.add(ItemMapper.toItemDto(item, BookingMapper.toItemBookingDto(lastBooking),
+                    BookingMapper.toItemBookingDto(nextBooking), commentsList));
+        }
+        return datedItemList;
+    }
+
+    @Transactional
+    public CommentDtoOut saveComment(long userId, long itemId, CommentDtoIn commentDto) {
+        checkId(itemId);
+        User user = checkUser(userId);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
+        List<Booking> bookings = bookingRepository.findAllByBookerIdAndItemId(userId, itemId, LocalDateTime.now());
+        if (bookings.isEmpty()) {
+            throw new BadParameterException("Пользователь " + userId + " не арендовал вещь "
+                    + itemId + ". Не имеет права писать отзыв");
+        }
+        Comment comment = CommentMapper.toComment(commentDto, item, user);
+
+        return CommentMapper.toCommentDto(commentRepository.save(comment));
+    }
+
+    private void checkId(long userId) {
+        if (userId <= 0) {
+            throw new BadParameterException("id must be positive");
         }
     }
+
+    private User checkUser(long userId) {
+        checkId(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не зарегистрирован"));
+    }
+
+
 }
 

@@ -1,23 +1,31 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Builder;
-import lombok.Data;
-import ru.practicum.shareit.request.ItemRequest;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import ru.practicum.shareit.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
-@Data
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class ItemDto {
 
     private Long id;
-    @NotBlank(message = "Название не может быть пустым")
-    private String name;
-    @NotBlank(message = "Описание не может быть пустым")
-    private String description;
-    @NotNull(message = "Доступность не может быть пустым")
-    private Boolean available;
-    private ItemRequest request;
-}
 
+    @NotBlank(groups = {Create.class})
+    @Size(max = 50)
+    private String name;
+
+    @NotBlank(groups = {Create.class})
+    @Size(max = 500)
+    private String description;
+
+    @NotNull(groups = {Create.class})
+    private Boolean available;
+}
