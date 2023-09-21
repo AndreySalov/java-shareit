@@ -5,12 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.Create;
-import ru.practicum.shareit.Update;
 import ru.practicum.shareit.comment.dto.CommentDtoIn;
 import ru.practicum.shareit.comment.dto.CommentDtoOut;
+import ru.practicum.shareit.common.dto.Create;
+import ru.practicum.shareit.common.dto.Update;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoDated;
+import ru.practicum.shareit.item.service.IItemService;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ import java.util.List;
 public class ItemController {
 
     private static final String USER_ID = "X-Sharer-User-Id";
-    private final ItemService itemService;
+    private final IItemService itemService;
 
     @GetMapping
     public List<ItemDtoDated> getUserItems(@RequestHeader(USER_ID) long userId) {

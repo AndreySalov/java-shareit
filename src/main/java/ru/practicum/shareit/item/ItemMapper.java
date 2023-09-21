@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.dto.BookingDtoForItem;
 import ru.practicum.shareit.comment.dto.CommentDtoOut;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -11,7 +10,7 @@ import ru.practicum.shareit.user.User;
 
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public class ItemMapper {
 
     public static ItemDto toItemDto(Item item) {

@@ -25,13 +25,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class BookingService {
+public class BookingService implements IBookingService {
 
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
     @Transactional
+    @Override
     public BookingDtoOut saveBooking(long userId, BookingDtoIn bookingDto) {
         User user = checkUser(userId);
         Item item = itemRepository.findById(bookingDto.getItemId())
@@ -49,6 +50,7 @@ public class BookingService {
 
 
     @Transactional
+    @Override
     public BookingDtoOut bookingApprove(long userId, long bookingId, boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Запроса на аренду с ID "
@@ -69,7 +71,7 @@ public class BookingService {
         return BookingMapper.toBookingDto(booking);
     }
 
-
+    @Override
     public BookingDtoOut findBookingById(long userId, long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Запроса на аренду с ID "
@@ -83,36 +85,34 @@ public class BookingService {
         return BookingMapper.toBookingDto(booking);
     }
 
-
+    @Override
     public List<BookingDtoOut> findUserBookings(long userId, BookingState state) {
         User user = checkUser(userId);
         switch (state) {
             case ALL:
-                return bookingRepository.findByBooker_IdOrderByStartDesc(userId).stream()
+                return bookingRepository.findByBookerIdOrderByEndDesc(userId).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case CURRENT:
-                return bookingRepository.findAllCurrentByBookerId(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByEndDesc(userId, LocalDateTime.now(), LocalDateTime.now()).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case PAST:
-                return bookingRepository.findAllPastByBookerId(userId, LocalDateTime.now(),
+                return bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(),
                                 Sort.by(Sort.Direction.DESC, "start")).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case FUTURE:
-                return bookingRepository.findAllFutureByBookerId(userId, LocalDateTime.now(),
+                return bookingRepository.findByBookerIdAndEndIsAfter(userId, LocalDateTime.now(),
                                 Sort.by(Sort.Direction.DESC, "start")).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case WAITING:
-                return bookingRepository.findAllWaitingByBookerId(userId,
-                                Sort.by(Sort.Direction.DESC, "start")).stream()
+                return bookingRepository.findByBookerIdAndStatusOrderByEndDesc(userId, BookingStatus.WAITING).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case REJECTED:
-                return bookingRepository.findAllRejectedByBookerId(userId,
-                                Sort.by(Sort.Direction.DESC, "start")).stream()
+                return bookingRepository.findByBookerIdAndStatusOrderByEndDesc(userId, BookingStatus.REJECTED).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             default:
@@ -120,7 +120,7 @@ public class BookingService {
         }
     }
 
-
+    @Override
     public List<BookingDtoOut> findOwnerBookings(long userId, BookingState state) {
         User user = checkUser(userId);
         if (itemRepository.findAllItemsByUserIdOrderById(userId).isEmpty()) {
@@ -133,7 +133,7 @@ public class BookingService {
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case CURRENT:
-                return bookingRepository.findAllCurrentByOwnerId(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllCurrentByOwnerId(userId, LocalDateTime.now(), Sort.by(Sort.Direction.ASC, "start")).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case PAST:

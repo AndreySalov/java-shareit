@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -6,16 +6,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.dto.BookingDtoForItem;
-import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.comment.Comment;
-
 import ru.practicum.shareit.comment.dto.CommentDtoIn;
 import ru.practicum.shareit.comment.dto.CommentDtoOut;
 import ru.practicum.shareit.comment.mapper.CommentMapper;
 import ru.practicum.shareit.comment.repository.CommentRepository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoDated;
 import ru.practicum.shareit.item.exception.BadParameterException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -34,18 +35,20 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 @RequiredArgsConstructor
-public class ItemService {
+public class ItemService implements IItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
+    @Override
     public void deleteItem(long id) {
         checkId(id);
         itemRepository.deleteById(id);
     }
 
+    @Override
     @Transactional
     public ItemDto createItem(long userId, ItemDto itemDto) {
         User user = checkUser(userId);
@@ -54,6 +57,7 @@ public class ItemService {
         return ItemMapper.toItemDto(item);
     }
 
+    @Override
     @Transactional
     public ItemDto updateItem(long userId, ItemDto itemDto, long itemId) {
         checkId(itemId);
@@ -70,6 +74,7 @@ public class ItemService {
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
+    @Override
     public List<ItemDto> search(String text) {
         if (text.isBlank()) {
             return List.of();
@@ -80,6 +85,7 @@ public class ItemService {
                 .collect(toList());
     }
 
+    @Override
     public ItemDtoDated getItemById(long userId, long itemId) {
         checkId(itemId);
         checkUser(userId);
@@ -103,6 +109,7 @@ public class ItemService {
         return ItemMapper.toItemDto(item, lastBooking, nextBooking, comments);
     }
 
+    @Override
     public List<ItemDtoDated> getUserItems(long userId) {
         checkUser(userId);
 
@@ -151,6 +158,7 @@ public class ItemService {
         return datedItemList;
     }
 
+    @Override
     @Transactional
     public CommentDtoOut saveComment(long userId, long itemId, CommentDtoIn commentDto) {
         checkId(itemId);
