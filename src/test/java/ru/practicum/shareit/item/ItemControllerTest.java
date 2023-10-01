@@ -16,7 +16,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoDated;
 import ru.practicum.shareit.item.service.ItemService;
 
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,24 +26,23 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @WebMvcTest(ItemController.class)
 @AutoConfigureMockMvc
 public class ItemControllerTest {
+    public static final String USER_ID = "X-Sharer-User-Id";
     @MockBean
     private ItemService itemService;
-
     @Autowired
     private ObjectMapper mapper;
-
     @Autowired
     private MockMvc mvc;
-
     private ItemDto itemDto;
     private BookingDtoForItem bookingLast;
     private BookingDtoForItem bookingNext;
     private CommentDtoOut commentDto;
     private ItemDtoDated itemDtoDated;
-    public static final String USER_ID = "X-Sharer-User-Id";
+
     @BeforeEach
     public void shouldItemCreate() {
         itemDto = new ItemDto(1L, "Вещь 1", "Описание вещи 1", true, null);
