@@ -1,39 +1,32 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table(name = "items")
-public class Item {
+@Table(name = "requests")
+public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
-    private String name;
-
     @Column(nullable = false, length = 500)
     private String description;
 
-    @Column(name = "is_available", nullable = false)
-    private Boolean isAvailable;
-
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id")
-    private Request request;
+    private LocalDateTime created;
 }
