@@ -1,4 +1,3 @@
-DELETE FROM users;
 ALTER TABLE users ALTER COLUMN id restart WITH 1;
 ALTER TABLE items ALTER COLUMN id restart WITH 1;
 ALTER TABLE bookings ALTER COLUMN id restart WITH 1;
