@@ -17,7 +17,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.BadParameterException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.service.IItemService;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.User;
@@ -42,7 +41,7 @@ class ItemServiceTest {
     private BookingRepository bookingRepository;
     private CommentRepository commentRepository;
     private RequestRepository requestRepository;
-    private IItemService service;
+    private ItemService service;
 
     private ItemDto itemDto;
     private Comment comment;

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.IUserService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.*;
 class UserServiceTest {
 
     private final EntityManager em;
-    private final UserService service;
+    private final IUserService service;
 
     @Test
     void shouldCreateUser() {
