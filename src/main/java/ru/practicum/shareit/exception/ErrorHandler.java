@@ -24,6 +24,12 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleAlreadyExistException(final AlreadyExistException e) {
+        log.info("409 {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
 
     @ExceptionHandler({BadParameterException.class, MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
