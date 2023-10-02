@@ -58,7 +58,7 @@ public class UserService implements IUserService {
 
     private void checkId(long userId) {
         if (userId <= 0) {
-            throw new NotFoundException("id должно быть положительным.");
+            throw new NotFoundException("id must be positive");
         }
     }
 }
