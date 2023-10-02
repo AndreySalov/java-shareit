@@ -6,7 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.BookingDtoOut;
-import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.service.IBookingService;
 import ru.practicum.shareit.item.exception.BadParameterException;
 
 import javax.validation.Valid;
@@ -23,7 +23,7 @@ import java.util.List;
 public class BookingController {
 
     private static final String USER_ID = "X-Sharer-User-Id";
-    private final BookingService bookingService;
+    private final IBookingService bookingService;
 
     @PostMapping
     public BookingDtoOut saveBooking(
