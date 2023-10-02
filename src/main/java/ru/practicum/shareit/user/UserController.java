@@ -21,31 +21,32 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAll() {
-        log.info("Получен GET запрос");
+        log.info("Получен GET запрос getAll");
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
     public UserDto getUser(@PathVariable long id) {
-        log.info("Получен GET запрос");
+        log.info("В метод getUserById передан userId {}", id);
         return userService.getUserById(id);
     }
 
     @PostMapping()
     public UserDto create(@Validated(Create.class) @RequestBody UserDto userDto) {
-        log.info("Получен POST запрос");
+        log.info("В метод create передан userDto.name {}, userDto.email {}", userDto.getName(), userDto.getEmail());
         return userService.createUser(userDto);
     }
 
     @PatchMapping("/{id}")
     public UserDto update(@PathVariable long id, @Validated(Update.class) @RequestBody UserDto userDto) {
-        log.info("Получен PUT запрос");
+        log.info("В метод updateUser передан userId {}, userDto.name {}, userDto.email {}",
+                id, userDto.getName(), userDto.getEmail());
         return userService.updateUser(userDto, id);
     }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable long id) {
-        log.info("Получен DELETE запрос");
+        log.info("В метод deleteUser передан userId {}", id);
         userService.deleteUser(id);
     }
 }
