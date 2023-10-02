@@ -8,14 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.BookingDtoOut;
-import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.service.IBookingService;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.item.service.IItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.IUserService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -31,9 +31,9 @@ import static org.hamcrest.Matchers.notNullValue;
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class BookingServiceWithContextTest {
     private final EntityManager em;
-    private final BookingService bookingService;
-    private final ItemService itemService;
-    private final UserService userService;
+    private final IBookingService bookingService;
+    private final IItemService itemService;
+    private final IUserService userService;
 
     private ItemDto itemDto;
     private Item item;

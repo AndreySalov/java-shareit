@@ -169,6 +169,7 @@ public class ItemServiceWithContextTest {
         assertThat(methodItem.getNextBooking(), nullValue());
     }
 
+
     @Test
     void shouldGetUserItems() {
         long userId = 1L;
