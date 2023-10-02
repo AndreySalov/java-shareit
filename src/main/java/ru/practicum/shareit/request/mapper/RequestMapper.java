@@ -21,6 +21,7 @@ public class RequestMapper {
                 user,
                 LocalDateTime.now()
         );
+        //return Request.builder().id(requestDto.getId()).description(requestDto.getDescription()).user(user).build();
     }
 
     public static RequestDtoOut toItemRequestDto(Request request, List<ItemDto> items) {

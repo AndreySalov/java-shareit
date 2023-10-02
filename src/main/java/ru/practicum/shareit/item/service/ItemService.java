@@ -4,6 +4,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
@@ -119,10 +120,10 @@ public class ItemService implements IItemService {
         if (item.getUser().getId() != userId) {
             return ItemMapper.toItemDto(item, null, null, comments);
         }
-        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(itemId,
-                LocalDateTime.now(), BookingStatus.APPROVED).orElse(null);
-        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterAndStatusOrderByStart(itemId,
-                LocalDateTime.now(), BookingStatus.APPROVED).orElse(null);
+        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeAndStatus(itemId,
+                LocalDateTime.now(), BookingStatus.APPROVED , Sort.by(Sort.Direction.DESC ,"start")).orElse(null);
+        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterAndStatus(itemId,
+                LocalDateTime.now(), BookingStatus.APPROVED,Sort.by(Sort.Direction.ASC ,"start")).orElse(null);
 
         return ItemMapper.toItemDto(item, BookingMapper.toItemBookingDto(lastBooking),
                 BookingMapper.toItemBookingDto(nextBooking), comments);
@@ -145,11 +146,11 @@ public class ItemService implements IItemService {
         }
         List<ItemDtoDated> datedItemList = new ArrayList<>();
         Map<Item, List<Booking>> lastBookingsMap = bookingRepository
-                .findAllByItemUserIdAndItemIdInAndStartBeforeOrderByStartDesc(userId, itemIds, LocalDateTime.now())
+                .findAllByItemUserIdAndItemIdInAndStartBefore(userId, itemIds, LocalDateTime.now() , Sort.by(Sort.Direction.DESC , "start"))
                 .stream()
                 .collect(groupingBy(Booking::getItem, toList()));
         Map<Item, List<Booking>> nextBookingsMap = bookingRepository
-                .findAllByItemUserIdAndItemIdInAndStartAfterOrderByStart(userId, itemIds, LocalDateTime.now())
+                .findAllByItemUserIdAndItemIdInAndStartAfter(userId, itemIds, LocalDateTime.now() , Sort.by(Sort.Direction.ASC , "start") )
                 .stream()
                 .collect(groupingBy(Booking::getItem, toList()));
         Map<Item, List<Comment>> comments = commentRepository.findAllByItemUserIdInOrderByCreatedDesc(itemIds)
