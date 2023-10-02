@@ -93,7 +93,7 @@ public class BookingService implements IBookingService {
     public List<BookingDtoOut> findUserBookings(long userId, BookingState state, int from, int size) {
         checkUser(userId);
 
-        Pageable page = PageRequest.of(from / size, size , Sort.by(Sort.Direction.DESC, "start"));
+        Pageable page = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
 
         List<BookingDtoOut> bookings = new ArrayList<>();
         switch (state) {
@@ -148,7 +148,7 @@ public class BookingService implements IBookingService {
     public List<BookingDtoOut> findOwnerBookings(long userId, BookingState state, int from, int size) {
         checkUser(userId);
 
-        Pageable page = PageRequest.of(from / size, size , Sort.by(Sort.Direction.DESC , "start"));
+        Pageable page = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
 
         List<BookingDtoOut> bookings = new ArrayList<>();
         switch (state) {
