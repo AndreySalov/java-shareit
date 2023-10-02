@@ -60,9 +60,7 @@ public class ItemService implements IItemService {
         User user = checkUser(userId);
         Request request = null;
         if (itemDto.getRequestId() != null) {
-            request = requestRepository.findById(itemDto.getRequestId())
-                    .orElseThrow(() -> new NotFoundException("Запроса с ID " + itemDto.getRequestId()
-                            + " нет в базе"));
+            request = requestRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new NotFoundException("Запроса с ID " + itemDto.getRequestId() + " нет в базе"));
         }
         Item itemFromDto = ItemMapper.toItem(itemDto, user, request);
         Item item = itemRepository.save(itemFromDto);
@@ -75,17 +73,13 @@ public class ItemService implements IItemService {
         checkId(itemId);
         checkUser(userId);
 
-        Item itemFromRep = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
+        Item itemFromRep = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
         if (itemFromRep.getUser().getId() != userId) {
-            throw new NotFoundException("Пользователь с ID " + userId + " не является владельцем вещи c ID "
-                    + itemId + ". Изменение запрещено");
+            throw new NotFoundException("Пользователь с ID " + userId + " не является владельцем вещи c ID " + itemId + ". Изменение запрещено");
         }
         Request request = null;
         if (itemDto.getRequestId() != null) {
-            request = requestRepository.findById(itemDto.getRequestId())
-                    .orElseThrow(() -> new NotFoundException("Запроса с ID " + itemDto.getRequestId()
-                            + " нет в базе"));
+            request = requestRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new NotFoundException("Запроса с ID " + itemDto.getRequestId() + " нет в базе"));
         }
         Item item = ItemMapper.toItem(itemDto, itemFromRep, request);
         item.setId(itemId);
@@ -101,9 +95,7 @@ public class ItemService implements IItemService {
 
         Pageable page = PageRequest.of(from / size, size);
         List<Item> itemsList = itemRepository.findByNameOrDescription(text, page);
-        return itemsList.stream()
-                .map(ItemMapper::toItemDto)
-                .collect(toList());
+        return itemsList.stream().map(ItemMapper::toItemDto).collect(toList());
     }
 
     @Override
@@ -111,22 +103,15 @@ public class ItemService implements IItemService {
         checkId(itemId);
         checkUser(userId);
 
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
-        List<CommentDtoOut> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(itemId)
-                .stream()
-                .map(CommentMapper::toCommentDto)
-                .collect(toList());
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
+        List<CommentDtoOut> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(itemId).stream().map(CommentMapper::toCommentDto).collect(toList());
         if (item.getUser().getId() != userId) {
             return ItemMapper.toItemDto(item, null, null, comments);
         }
-        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeAndStatus(itemId,
-                LocalDateTime.now(), BookingStatus.APPROVED , Sort.by(Sort.Direction.DESC ,"start")).orElse(null);
-        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterAndStatus(itemId,
-                LocalDateTime.now(), BookingStatus.APPROVED,Sort.by(Sort.Direction.ASC ,"start")).orElse(null);
+        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeAndStatus(itemId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")).orElse(null);
+        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterAndStatus(itemId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")).orElse(null);
 
-        return ItemMapper.toItemDto(item, BookingMapper.toItemBookingDto(lastBooking),
-                BookingMapper.toItemBookingDto(nextBooking), comments);
+        return ItemMapper.toItemDto(item, BookingMapper.toItemBookingDto(lastBooking), BookingMapper.toItemBookingDto(nextBooking), comments);
     }
 
     @Override
@@ -145,17 +130,9 @@ public class ItemService implements IItemService {
             itemIds.add(item.getId());
         }
         List<ItemDtoDated> datedItemList = new ArrayList<>();
-        Map<Item, List<Booking>> lastBookingsMap = bookingRepository
-                .findAllByItemUserIdAndItemIdInAndStartBefore(userId, itemIds, LocalDateTime.now() , Sort.by(Sort.Direction.DESC , "start"))
-                .stream()
-                .collect(groupingBy(Booking::getItem, toList()));
-        Map<Item, List<Booking>> nextBookingsMap = bookingRepository
-                .findAllByItemUserIdAndItemIdInAndStartAfter(userId, itemIds, LocalDateTime.now() , Sort.by(Sort.Direction.ASC , "start") )
-                .stream()
-                .collect(groupingBy(Booking::getItem, toList()));
-        Map<Item, List<Comment>> comments = commentRepository.findAllByItemUserIdInOrderByCreatedDesc(itemIds)
-                .stream()
-                .collect(groupingBy(Comment::getItem, toList()));
+        Map<Item, List<Booking>> lastBookingsMap = bookingRepository.findAllByItemUserIdAndItemIdInAndStartBefore(userId, itemIds, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")).stream().collect(groupingBy(Booking::getItem, toList()));
+        Map<Item, List<Booking>> nextBookingsMap = bookingRepository.findAllByItemUserIdAndItemIdInAndStartAfter(userId, itemIds, LocalDateTime.now(), Sort.by(Sort.Direction.ASC, "start")).stream().collect(groupingBy(Booking::getItem, toList()));
+        Map<Item, List<Comment>> comments = commentRepository.findAllByItemUserIdInOrderByCreatedDesc(itemIds).stream().collect(groupingBy(Comment::getItem, toList()));
 
         for (Item item : items) {
             Booking lastBooking = null;
@@ -167,10 +144,8 @@ public class ItemService implements IItemService {
             if (nextBookingsMap.get(item) != null && nextBookingsMap.get(item).get(0) != null) {
                 nextBooking = nextBookingsMap.get(item).get(0);
             }
-            List<CommentDtoOut> commentsList = comments.getOrDefault(item,
-                    List.of()).stream().map(CommentMapper::toCommentDto).collect(Collectors.toList());
-            datedItemList.add(ItemMapper.toItemDto(item, BookingMapper.toItemBookingDto(lastBooking),
-                    BookingMapper.toItemBookingDto(nextBooking), commentsList));
+            List<CommentDtoOut> commentsList = comments.getOrDefault(item, List.of()).stream().map(CommentMapper::toCommentDto).collect(Collectors.toList());
+            datedItemList.add(ItemMapper.toItemDto(item, BookingMapper.toItemBookingDto(lastBooking), BookingMapper.toItemBookingDto(nextBooking), commentsList));
         }
         return datedItemList;
     }
@@ -181,13 +156,10 @@ public class ItemService implements IItemService {
         checkId(itemId);
 
         User user = checkUser(userId);
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
-        List<Booking> bookings = bookingRepository.findAllByItemIdAndBookerIdAndStatusAndStartBeforeAndEndBefore(
-                itemId, userId, BookingStatus.APPROVED, LocalDateTime.now(), LocalDateTime.now());
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Предмета с ID " + itemId + " не зарегистрировано"));
+        List<Booking> bookings = bookingRepository.findAllByItemIdAndBookerIdAndStatusAndStartBeforeAndEndBefore(itemId, userId, BookingStatus.APPROVED, LocalDateTime.now(), LocalDateTime.now());
         if (bookings.isEmpty()) {
-            throw new BadParameterException("Пользователь " + userId + " не арендовал вещь "
-                    + itemId + ". Не имеет права писать отзыв");
+            throw new BadParameterException("Пользователь " + userId + " не арендовал вещь " + itemId + ". Не имеет права писать отзыв");
         }
         Comment comment = CommentMapper.toComment(commentDto, item, user);
 
@@ -196,8 +168,7 @@ public class ItemService implements IItemService {
 
     private User checkUser(long userId) {
         checkId(userId);
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не зарегистрирован"));
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не зарегистрирован"));
     }
 
     private void checkId(long userId) {

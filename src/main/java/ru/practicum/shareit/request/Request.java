@@ -4,7 +4,6 @@ import lombok.*;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
