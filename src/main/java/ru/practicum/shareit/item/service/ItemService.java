@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemService implements IItemService {
 
     private final ItemRepository itemRepository;
@@ -202,6 +204,4 @@ public class ItemService implements IItemService {
             throw new BadParameterException("id must be positive");
         }
     }
-
 }
-
