@@ -39,9 +39,7 @@ class RequestControllerTest {
     private MockMvc mvc;
 
     private RequestDtoOut requestDto;
-
     public static final String USER_ID = "X-Sharer-User-Id";
-
     @BeforeEach
     public void itemCreate() {
         requestDto = new RequestDtoOut(1L, "Описание запроса",
