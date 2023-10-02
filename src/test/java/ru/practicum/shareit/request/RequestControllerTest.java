@@ -29,17 +29,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class RequestControllerTest {
 
+    public static final String USER_ID = "X-Sharer-User-Id";
     @MockBean
     private RequestService requestService;
-
     @Autowired
     private ObjectMapper mapper;
-
     @Autowired
     private MockMvc mvc;
-
     private RequestDtoOut requestDto;
-    public static final String USER_ID = "X-Sharer-User-Id";
+
     @BeforeEach
     public void itemCreate() {
         requestDto = new RequestDtoOut(1L, "Описание запроса",
