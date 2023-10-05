@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc
@@ -57,39 +55,6 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldSaveUserWrongEmail() throws Exception {
-        UserDto userDto = new UserDto(1L, "Иван Иванович", "iimail.ru");
-        when(userService.createUser(any()))
-                .thenReturn(userDto);
-        mvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(userDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never())
-                .createUser(any());
-    }
-
-    @Test
-    void shouldSaveUserEmailIsNull() throws Exception {
-        UserDto userDto = new UserDto(1L, "Иван Иванович", null);
-        when(userService.createUser(any()))
-                .thenReturn(userDto);
-        mvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(userDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never())
-                .createUser(any());
-    }
-
-
-    @Test
     void shouldUpdateUser() throws Exception {
         UserDto userDto = new UserDto(1L, "Иван Иванович", "ii@mail.ru");
         when(userService.updateUser(any(), anyLong()))
@@ -107,22 +72,6 @@ class UserControllerTest {
 
         verify(userService, times(1))
                 .updateUser(any(), anyLong());
-    }
-
-    @Test
-    void shouldUpdateUserWrongEmail() throws Exception {
-        UserDto userDto = new UserDto(1L, "Иван Иванович", "iimail.ru");
-        when(userService.updateUser(any(), anyLong()))
-                .thenReturn(userDto);
-        mvc.perform(patch("/users/1")
-                        .content(mapper.writeValueAsString(userDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never())
-                .createUser(any());
     }
 
     @Test

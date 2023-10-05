@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.request.dto.RequestDtoOut;
 import ru.practicum.shareit.request.service.RequestService;
 
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,19 +26,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-
-
 @WebMvcTest(RequestController.class)
 @AutoConfigureMockMvc
 class RequestControllerTest {
-
-    public static final String USER_ID = "X-Sharer-User-Id";
+    private static final String USER_ID = "X-Sharer-User-Id";
     @MockBean
     private RequestService requestService;
+
     @Autowired
     private ObjectMapper mapper;
+
     @Autowired
     private MockMvc mvc;
+
     private RequestDtoOut requestDto;
 
     @BeforeEach
@@ -63,38 +64,6 @@ class RequestControllerTest {
                 .andExpect(jsonPath("$.items", is(requestDto.getItems())));
 
         verify(requestService, times(1))
-                .createItemRequest(anyLong(), any());
-    }
-
-    @Test
-    void shouldSaveItemRequestWithBlankDescription() throws Exception {
-        requestDto.setDescription("");
-
-        mvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(requestDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(USER_ID, 1))
-                .andExpect(status().isBadRequest());
-
-        verify(requestService, never())
-                .createItemRequest(anyLong(), any());
-    }
-
-    @Test
-    void shouldSaveItemRequestWithNullDescription() throws Exception {
-        requestDto.setDescription(null);
-
-        mvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(requestDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(USER_ID, 1))
-                .andExpect(status().isBadRequest());
-
-        verify(requestService, never())
                 .createItemRequest(anyLong(), any());
     }
 
@@ -138,51 +107,6 @@ class RequestControllerTest {
                 .andExpect(jsonPath("$[0].created", notNullValue()));
 
         verify(requestService, times(1))
-                .getItemRequestsFromOtherUsers(anyLong(), anyInt(), anyInt());
-    }
-
-    @Test
-    void shouldGetItemRequestsFromOtherUsersWithNegativeFrom() throws Exception {
-        int from = -1;
-        int size = 5;
-
-        mvc.perform(get("/requests/all")
-                        .header(USER_ID, 1)
-                        .param("from", String.valueOf(from))
-                        .param("size", String.valueOf(size)))
-                .andExpect(status().isBadRequest());
-
-        verify(requestService, never())
-                .getItemRequestsFromOtherUsers(anyLong(), anyInt(), anyInt());
-    }
-
-    @Test
-    void shouldGetItemRequestsFromOtherUsersWithNegativeSize() throws Exception {
-        int from = 0;
-        int size = -5;
-
-        mvc.perform(get("/requests/all")
-                        .header(USER_ID, 1)
-                        .param("from", String.valueOf(from))
-                        .param("size", String.valueOf(size)))
-                .andExpect(status().isBadRequest());
-
-        verify(requestService, never())
-                .getItemRequestsFromOtherUsers(anyLong(), anyInt(), anyInt());
-    }
-
-    @Test
-    void shouldGetItemRequestsFromOtherUsersWithNullSize() throws Exception {
-        int from = 0;
-        int size = 0;
-
-        mvc.perform(get("/requests/all")
-                        .header(USER_ID, 1)
-                        .param("from", String.valueOf(from))
-                        .param("size", String.valueOf(size)))
-                .andExpect(status().isBadRequest());
-
-        verify(requestService, never())
                 .getItemRequestsFromOtherUsers(anyLong(), anyInt(), anyInt());
     }
 
