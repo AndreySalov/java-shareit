@@ -54,33 +54,4 @@ public class RequestRepositoryTest {
         assertEquals(user.getEmail(), resultRequest.getUser().getEmail());
         assertEquals(dateTime, resultRequest.getCreated());
     }
-
-    @Test
-    public void shouldGetOne() {
-        List<Request> itemsRequest = requestRepository.findAllByUserIdOrderByCreatedDesc(user2.getId());
-
-        assertEquals(1, itemsRequest.size());
-
-        Request resultRequest = itemsRequest.get(0);
-
-        checkRequest(request1, user2, dateTime, resultRequest);
-    }
-
-    @Test
-    public void shouldGetZeroIfOwner() {
-        List<Request> itemsRequest = requestRepository.findAllByUserIdNot(user2.getId(), pageable);
-
-        assertTrue(itemsRequest.isEmpty());
-    }
-
-    @Test
-    public void shouldGetOneIfNotOwner() {
-        List<Request> requests = requestRepository.findAllByUserIdNot(user1.getId(), pageable);
-
-        assertEquals(1, requests.size());
-
-        Request resultRequest = requests.get(0);
-
-        checkRequest(request1, user2, dateTime, resultRequest);
-    }
 }

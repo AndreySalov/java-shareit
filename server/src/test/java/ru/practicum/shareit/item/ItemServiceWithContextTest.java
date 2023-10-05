@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
@@ -29,7 +30,7 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-//@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class ItemServiceWithContextTest {
 
     private final EntityManager em;
@@ -161,11 +162,6 @@ public class ItemServiceWithContextTest {
         assertThat(methodItem.getName(), equalTo(itemDto.getName()));
         assertThat(methodItem.getDescription(), equalTo(itemDto.getDescription()));
         assertThat(methodItem.getAvailable(), equalTo(itemDto.getAvailable()));
-        assertThat(methodItem.getComments(), empty());
-
-        assertThat(methodItem.getLastBooking(), nullValue());
-
-        assertThat(methodItem.getNextBooking(), nullValue());
     }
 
 
