@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataJpaTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+//@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class BookingRepositoryTest {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;

@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.*;
 @Transactional
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+//@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class UserServiceTest {
 
     private final EntityManager em;
