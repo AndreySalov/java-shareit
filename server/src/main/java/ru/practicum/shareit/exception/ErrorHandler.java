@@ -2,14 +2,12 @@ package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.item.exception.BadParameterException;
 
-import javax.validation.ConstraintViolationException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -36,12 +34,6 @@ public class ErrorHandler {
     public ErrorResponse handleItemNotAvailableExc(final RuntimeException e) {
         log.info("Validation: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleConstraintViolationException(final ConstraintViolationException e) {
-        log.info("Validation: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler

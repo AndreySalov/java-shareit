@@ -8,8 +8,6 @@ import ru.practicum.shareit.exception.ErrorResponse;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.exception.BadParameterException;
 
-import javax.validation.ConstraintViolationException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -62,12 +60,4 @@ class ErrorHandlerTest {
         assertNotNull(errorResponse.getError());
     }
 
-    @Test
-    void shouldCallHandleConstraintViolationExc() {
-        ConstraintViolationException exc = new ConstraintViolationException(null);
-
-        ErrorResponse errorResponse = errorHandler.handleOtherExc(exc);
-
-        assertNotNull(errorResponse.getError());
-    }
 }
