@@ -11,7 +11,7 @@ import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.service.IBookingService;
 import ru.practicum.shareit.comment.Comment;
-import ru.practicum.shareit.comment.dto.CommentDtoIn;
+import ru.practicum.shareit.item.dto.CommentDtoIn;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoDated;
 import ru.practicum.shareit.item.model.Item;

@@ -3,9 +3,9 @@ package ru.practicum.shareit.comment.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.comment.Comment;
-import ru.practicum.shareit.comment.dto.CommentDtoIn;
 import ru.practicum.shareit.comment.dto.CommentDtoOut;
 import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.CommentDtoIn;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
